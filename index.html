@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Конфигуратор JC-Key (WebApp)</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  body { font-family: Inter, Roboto, sans-serif; padding: 18px; background: #f6f9ff; color:#111; }
+  h1 { font-size: 20px; margin-bottom: 12px; }
+  .segment { background:#fff; padding:12px; border-radius:10px; margin-bottom:12px; box-shadow:0 6px 18px rgba(20,30,80,0.06); }
+  .option { display:flex; align-items:center; justify-content:space-between; padding:8px; border-radius:8px; cursor:pointer; }
+  .option.selected { background:linear-gradient(90deg,#f0e9ff,#eef7ff); box-shadow:inset 0 0 0 1px rgba(0,0,0,0.03); }
+  .price { font-weight:600; }
+  .summary { position:sticky; bottom:12px; background:#fff; padding:12px; border-radius:10px; box-shadow:0 6px 18px rgba(20,30,80,0.06); }
+  button { padding:10px 14px; border-radius:8px; border: none; cursor:pointer; font-weight:600; }
+  .pay-row { display:flex; gap:8px; margin-top:8px; }
+</style>
+</head>
+<body>
+  <h1>Конфигуратор кастомной клавиатуры — JC-Key</h1>
+
+  <div class="segment" id="segment-keycaps">
+    <h3>1) Кейкапы</h3>
+    <div id="keycaps-list"></div>
+  </div>
+
+  <div class="segment" id="segment-switches">
+    <h3>2) Свитчи</h3>
+    <div id="switches-list"></div>
+  </div>
+
+  <div class="segment" id="segment-base">
+    <h3>3) Основа</h3>
+    <div id="base-list"></div>
+  </div>
+
+  <div class="segment">
+    <h3>Доставка</h3>
+    <label>Город назначения (по России):</label>
+    <input id="city-to" placeholder="Например: Москва" style="width:100%;padding:8px;margin-top:6px;border-radius:8px;border:1px solid #dfe6f3;" />
+    <p style="font-size:13px;color:#555;margin-top:8px">Отправление из: Санкт-Петербург (СПб)</p>
+    <small style="color:#666">Расчёт доставки — ориентировочный. Для точного расчёта подключи СДЭК API (см. документацию СДЭК).</small>
+  </div>
+
+  <div class="summary" id="summary">
+    <div style="display:flex;justify-content:space-between">
+      <div>Стоимость товара:</div><div id="items-total">0 ₽</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px">
+      <div>Доставка (оценка):</div><div id="delivery-cost">0 ₽</div>
+    </div>
+    <hr style="margin:10px 0;border:none;border-top:1px solid #eef3ff" />
+    <div style="display:flex;justify-content:space-between">
+      <div style="font-weight:700">Итого:</div><div id="grand-total">0 ₽</div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label><input type="radio" name="pay" value="sbp" checked /> Оплата — СБП</label>
+      <label style="margin-left:12px"><input type="radio" name="pay" value="crypto" /> Оплата — Крипта</label>
+    </div>
+
+    <div class="pay-row">
+      <button id="btn-order" style="background:#3b82f6;color:#fff;flex:1">Оформить и отправить боту</button>
+      <button id="btn-preview" style="background:#fff;border:1px solid #d0dbff;color:#1f2937">Предпросмотр</button>
+    </div>
+
+    <p id="pay-instructions" style="font-size:13px;color:#444;margin-top:8px"></p>
+  </div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const catalog = {
+  keycaps: [
+    {id:'kc1', name:'PBT Minimal (White)', price:3200},
+    {id:'kc2', name:'PBT Retro (Beige)', price:3800},
+    {id:'kc3', name:'ABS Shine (Black)', price:2800},
+    {id:'kc4', name:'DSA Vegan (Grey)', price:4500},
+    {id:'kc5', name:'SA Profile (Candy)', price:7200}
+  ],
+  switches: [
+    {id:'sw1', name:'Gateron Red', price:600},
+    {id:'sw2', name:'Kailh Box White', price:900},
+    {id:'sw3', name:'Cherry MX Brown', price:1200},
+    {id:'sw4', name:'Holy Panda', price:2500},
+    {id:'sw5', name:'NovelKeys Cream', price:1400}
+  ],
+  base: [
+    {id:'bs1', name:'Aluminium Frame (Matte)', price:5500},
+    {id:'bs2', name:'Polycarbonate (Translucent)', price:3600},
+    {id:'bs3', name:'Wood (Walnut)', price:8800},
+    {id:'bs4', name:'Brass Plate (Heavy)', price:9900},
+    {id:'bs5', name:'Plastic Minimal', price:2200}
+  ]
+};
+
+let selection = {
+  keycaps: catalog.keycaps[0].id,
+  switches: catalog.switches[0].id,
+  base: catalog.base[0].id,
+  cityTo: '',
+  payMethod: 'sbp'
+};
+
+function formatRUB(n){ return new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽'; }
+
+function buildList(kind, containerId){
+  const list = document.getElementById(containerId);
+  list.innerHTML = '';
+  catalog[kind].forEach(item=>{
+    const el = document.createElement('div');
+    el.className = 'option' + (selection[kind]===item.id ? ' selected' : '');
+    el.innerHTML = `<div>${item.name}</div><div class="price">${formatRUB(item.price)}</div>`;
+    el.onclick = ()=> {
+      selection[kind] = item.id;
+      refreshUI();
+    };
+    list.appendChild(el);
+  });
+}
+
+function itemsTotal(){
+  const kc = catalog.keycaps.find(x=>x.id===selection.keycaps).price;
+  const sw = catalog.switches.find(x=>x.id===selection.switches).price;
+  const bs = catalog.base.find(x=>x.id===selection.base).price;
+  // switches price is per set; assume 1 set; total = sum
+  return kc + sw + bs;
+}
+
+/* Простая ориентировочная логика расчёта доставки:
+   - считаем вес и габариты по выбранным частям (стабильная оценка)
+   - используем грубую таблицу тарифов по регионам РФ (очень упрощённо)
+   - В проде: вызывай CDEK API для точного значения (см. примечания внизу).
+*/
+function estimateDeliveryCost(cityTo){
+  // базовая модель: вес (кг)
+  const baseWeight = 0.7; // кейкапы + свитчи + основа — ориентир
+  // прибавим в зависимости от тяжёлой основы
+  const baseId = selection.base;
+  const weightMultiplier = (baseId==='bs4')? 2.6 : (baseId==='bs3')? 1.6 : 1.0;
+
+  const weight = baseWeight * weightMultiplier; // кг
+  // расстояние оценочно: 0-1500 км (близко к СПБ), 1500-3000 (средне), 3000+ (далеко)
+  const city = (cityTo || '').trim().toLowerCase();
+  let zone = 'mid';
+  if(!city) zone='mid';
+  else {
+    // простая эвристика по названиям (очень грубо)
+    const close = ['петер', 'петро', 'ленин', 'спб', 'выборг','псков','мурманск'];
+    const far = ['владивосток','хабаровск','сахалин','якут','месяг','магадан'];
+    const midLike = ['москв','екатерин','самар','нижн','казан','ростов','новосибир','красноярск','томск','омск'];
+    if(close.some(s=>city.includes(s))) zone='near';
+    else if(far.some(s=>city.includes(s))) zone='far';
+    else if(midLike.some(s=>city.includes(s))) zone='mid';
+    else zone='mid';
+  }
+
+  // грубые тарифы (ориентировочно, в рублях) — только для оценки!
+  const rateTable = { near: 350, mid: 650, far: 1200 }; // базовый тариф
+  const rate = rateTable[zone] || rateTable['mid'];
+  // добавим на кг (примерно)
+  const cost = rate + Math.max(0, Math.round((weight - 1) * 300));
+  return Math.max(200, cost);
+}
+
+function refreshUI(){
+  buildList('keycaps','keycaps-list');
+  buildList('switches','switches-list');
+  buildList('base','base-list');
+
+  const items = itemsTotal();
+  document.getElementById('items-total').textContent = formatRUB(items);
+
+  const city = document.getElementById('city-to').value;
+  selection.cityTo = city;
+  const del = estimateDeliveryCost(city);
+  document.getElementById('delivery-cost').textContent = formatRUB(del);
+  const grand = items + del;
+  document.getElementById('grand-total').textContent = formatRUB(grand);
+
+  // payment instructions
+  const pay = document.querySelector('input[name="pay"]:checked')?.value || 'sbp';
+  selection.payMethod = pay;
+  const instr = document.getElementById('pay-instructions');
+  if(pay === 'sbp'){
+    instr.textContent = 'Оплата по СБП: после нажатия "Оформить" бот пришлёт инструкцию и QR / ссылку на оплату СБП (это реализуется на сервере).';
+  } else {
+    instr.textContent = 'Оплата криптой: после оформления бот пришлёт реквизиты кошелька и сумму. Поддерживаем BTC/ETH/USDT (нужно подключить свой провайдер платежей).';
+  }
+}
+
+document.getElementById('city-to').addEventListener('input', ()=> refreshUI());
+document.getElementById('btn-preview').addEventListener('click', ()=>{
+  alert(JSON.stringify({
+    keycaps: catalog.keycaps.find(x=>x.id===selection.keycaps),
+    switches: catalog.switches.find(x=>x.id===selection.switches),
+    base: catalog.base.find(x=>x.id===selection.base),
+    cityTo: selection.cityTo,
+    payMethod: selection.payMethod,
+    itemsTotal: itemsTotal(),
+    delivery: estimateDeliveryCost(selection.cityTo),
+    grandTotal: itemsTotal() + estimateDeliveryCost(selection.cityTo)
+  }, null, 2));
+});
+
+document.getElementById('btn-order').addEventListener('click', ()=>{
+  const order = {
+    user: tg.initDataUnsafe.user || {},
+    selection: {
+      keycaps: catalog.keycaps.find(x=>x.id===selection.keycaps),
+      switches: catalog.switches.find(x=>x.id===selection.switches),
+      base: catalog.base.find(x=>x.id===selection.base)
+    },
+    cityTo: selection.cityTo,
+    itemsTotal: itemsTotal(),
+    delivery: estimateDeliveryCost(selection.cityTo),
+    grandTotal: itemsTotal() + estimateDeliveryCost(selection.cityTo),
+    payMethod: selection.payMethod,
+    ts: Date.now()
+  };
+
+  // Отправляем данные в бот (его сервер получит web_app_data)
+  // sendData отправляет данные боту в поле web_app_data и закрывает WebApp у пользователя.
+  tg.sendData(JSON.stringify(order));
+});
+refreshUI();
+</script>
+</body>
+</html>
