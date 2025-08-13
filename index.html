@@ -2,570 +2,643 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Конфигуратор клавиатуры — Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Конфигуратор кастомной клавиатуры</title>
 <style>
+  /* ====== БАЗА ====== */
   :root{
-    --bg:#f3fbf5;
-    --card:#ffffff;
-    --ink:#1f3b2e;
-    --muted:#5a7a68;
-    --brand:#2e7d32;
-    --brand-2:#43a047;
-    --brand-3:#66bb6a;
-    --accent:#a5d6a7;
-    --keycap:#31b67a;
-    --switch:#2f9e76;
-    --base:#227a57;
-    --ring: 0 0 0 3px rgba(67,160,71,.25);
-    --shadow: 0 12px 30px rgba(0,0,0,.08);
-    --shadow-sm: 0 6px 18px rgba(0,0,0,.06);
+    --bg: #0f172a;           /* slate-900 */
+    --card: #0b1224;         /* глубокий тёмный */
+    --muted: #94a3b8;        /* slate-400 */
+    --text: #e2e8f0;         /* slate-200 */
+    --accent: #34d399;       /* emerald-400 */
+    --accent-2: #10b981;     /* emerald-500 */
+    --accent-3: #22c55e;     /* green-500 */
+    --ring: #86efac55;       /* green ring */
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
   }
-
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    background: var(--bg);
-    color:var(--ink);
-    line-height:1.45;
-  }
-
-  /* ===== Header / Hero Buttons ===== */
-  header{
-    padding:28px 16px 10px;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #052e1d55, transparent 60%),
+      radial-gradient(1000px 600px at 120% 10%, #0b3b2a55, transparent 60%),
+      var(--bg);
+    color: var(--text);
   }
   h1{
-    margin:0 0 14px;
     text-align:center;
-    font-size: clamp(24px, 3vw, 32px);
     font-weight:800;
-    letter-spacing:.3px;
+    letter-spacing:.2px;
+    margin:22px 12px 10px;
+    font-size: clamp(22px, 4vw, 34px);
   }
-  .subtitle{
+  .sub{
     text-align:center;
-    color:var(--muted);
-    margin-bottom:18px;
-    font-size:14px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-size: 14px;
   }
+
+  /* ====== ГЛАВНОЕ МЕНЮ (кнопки категорий) ====== */
   .menu{
     display:flex;
-    gap:14px;
-    justify-content:center;
-    flex-wrap:wrap;
-    padding:0 10px 8px;
+    gap:10px;
+    padding: 0 12px 10px;
+    max-width: 1100px;
+    margin: 0 auto;
   }
-  .menu .pill{
-    display:flex; align-items:center; gap:10px;
-    border:none; cursor:pointer; color:#fff;
-    padding:14px 18px; border-radius:14px;
-    box-shadow: var(--shadow-sm);
-    transition: transform .15s ease, filter .15s ease;
-    font-weight:700; letter-spacing:.2px;
+  .menu .card-btn{
+    flex:1 1 0;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px;
+    border-radius:16px;
+    border:1px solid #1f2937;
+    background:
+      linear-gradient(180deg, rgba(34,197,94,.12), rgba(16,185,129,.06));
+    color:#ecfeff;
+    cursor:pointer;
+    box-shadow: inset 0 0 0 1px #1b2b22, 0 6px 18px rgba(0,0,0,.25);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
   }
-  .pill:hover{ transform: translateY(-1px); filter: brightness(1.05); }
-  .pill:focus-visible{ outline:none; box-shadow: var(--ring); }
-  .pill .icon{ font-size:18px; opacity:.95 }
+  .menu .card-btn:hover{
+    transform: translateY(-2px);
+    border-color: #14532d;
+    box-shadow: inset 0 0 0 1px #1b2b22, 0 12px 30px rgba(0,0,0,.3);
+  }
+  .menu .icon{
+    width:38px; height:38px; border-radius:12px;
+    display:grid; place-items:center;
+    font-size:20px;
+    background: radial-gradient(60% 60% at 30% 20%, #22c55e, #16a34a);
+    box-shadow: inset 0 0 12px #052e1d, 0 4px 10px rgba(0,0,0,.4);
+  }
+  .menu .label{font-weight:700}
+  .menu .hint{font-size:12px; color: #a7f3d0}
 
-  .pill.keycaps{ background: linear-gradient(135deg, var(--keycap), #77d9ac); }
-  .pill.switches{ background: linear-gradient(135deg, var(--switch), #6fd9b8); }
-  .pill.bases{ background: linear-gradient(135deg, var(--base), #57c59a); }
-  .pill.delivery{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
-  .pill.cart{ background: linear-gradient(135deg, #1b5e20, #43a047); }
-
-  /* ===== Sections / Blocks ===== */
-  .container{ width:min(1100px, 94vw); margin:0 auto 24px; }
-
-  .block{ display:none; }
-  .block.active{ display:block; animation: fadeIn .25s ease; }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  /* ====== БЛОКИ-СЕТКИ ====== */
+  .block{
+    display:none;
+    max-width:1100px;
+    margin: 0 auto 18px;
+    padding: 10px 12px 0;
+    animation: fadeIn .25s ease;
+  }
+  @keyframes fadeIn{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none}}
 
   .grid{
     display:grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap:14px;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
   }
-  @media (max-width:900px){
-    .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-  @media (max-width:560px){
-    .grid{ grid-template-columns: 1fr; }
+  @media (max-width: 760px){
+    .grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* ===== Item Card ===== */
-  .card{
-    background: var(--card);
+  .item{
+    position:relative;
+    background: linear-gradient(180deg, #0b1224, #0b1326);
+    border:1px solid #172036;
     border-radius:16px;
-    box-shadow: var(--shadow);
     overflow:hidden;
-    transition: transform .18s ease, box-shadow .18s ease;
+    cursor:pointer;
+    box-shadow: var(--shadow);
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .item:hover{
+    transform: translateY(-3px);
+    border-color:#1f513a;
+    box-shadow: 0 16px 36px rgba(0,0,0,.45);
+  }
+  .item img{
+    width:100%;
+    aspect-ratio: 1/1;
+    object-fit:contain;
+    display:block;
+    background: radial-gradient(500px 300px at 50% 10%, #0f2d2055, transparent 60%);
+    border-bottom:1px solid #111827;
+  }
+  .price-tag{
+    position:absolute; top:8px; right:8px;
+    background: linear-gradient(180deg, #16a34a, #065f46);
+    color:#eaffef;
+    font-weight:700;
+    font-size:12px;
+    padding:4px 8px;
+    border-radius:999px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  }
+  .caption{
+    padding:10px 12px;
+    font-size:13px;
+    color:#cbd5e1;
+    min-height: 44px;
+  }
+
+  /* ====== КОРЗИНА & ОПЛАТА ====== */
+  .panel-row{
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap:12px;
+    padding: 0 12px 24px;
+    max-width:1100px;
+    margin: 0 auto;
+  }
+  @media (max-width: 920px){
+    .panel-row{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background: linear-gradient(180deg, #0b1224, #0b1326);
+    border:1px solid #172036;
+    border-radius:18px;
+    padding:16px;
+    box-shadow: var(--shadow);
+  }
+  .panel h3{
+    margin:2px 0 14px;
+    font-size:18px;
+    letter-spacing:.2px;
+  }
+
+  /* Корзина */
+  #order-items{
+    display:flex; gap:12px; justify-content:space-between; flex-wrap: wrap;
+  }
+  .slot{
+    flex:1 1 30%;
+    min-width: 140px;
+    background: #0a1121;
+    border:1px dashed #1f2937;
+    border-radius:14px;
+    padding:10px;
+    text-align:center;
+  }
+  .slot img{
+    width:100%; height:120px; object-fit:contain;
+    border-radius:12px;
+    background: radial-gradient(400px 220px at 50% 0%, #0f2d2055, transparent 60%);
+    border:1px solid #0b162d;
+  }
+  .slot .name{ margin-top:8px; font-size:13px; color:#cbd5e1 }
+  .slot .price{ margin-top:2px; font-weight:700; color:#86efac }
+
+  .total{
+    margin-top:14px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding-top:10px; border-top:1px solid #12203a;
+  }
+  .sum{
+    font-size:18px; font-weight:800;
+    color:#bbf7d0;
+  }
+  .clear-btn{
+    background: transparent; color:#94a3b8; border:1px solid #334155;
+    padding:8px 12px; border-radius:10px; cursor:pointer;
+  }
+  .clear-btn:hover{ border-color:#64748b; color:#e2e8f0 }
+
+  /* Доставка и оплата */
+  .field{margin-bottom:12px}
+  .field label{display:block; margin-bottom:6px; color:#a7f3d0; font-size:14px}
+  select, .radios{
+    width:100%;
+    background:#0a1121; color:#e2e8f0;
+    border:1px solid #1f2937; border-radius:12px;
+    padding:12px;
+    outline:none;
+    box-shadow: 0 0 0 0 var(--ring);
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  select:focus{ box-shadow: 0 0 0 4px var(--ring); border-color:#14532d }
+  .radios{
+    display:flex; gap:12px; align-items:center; padding:10px 12px; flex-wrap:wrap;
+  }
+  .radios label{display:flex; gap:8px; align-items:center; background:#0b1425; padding:8px 10px; border-radius:10px; border:1px solid #1f2937;}
+  .radios input{accent-color:#22c55e}
+
+  /* ====== МОДАЛЬНОЕ ОКНО ====== */
+  .modal{
+    display:none; position:fixed; inset:0; z-index:1000;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(6px);
+    align-items:center; justify-content:center;
+    padding: 16px;
+  }
+  .modal-content{
+    width:min(92vw, 520px);
+    background: linear-gradient(180deg, #0b1224, #0b1326);
+    color: var(--text);
+    border:1px solid #17324c;
+    border-radius:18px;
+    padding: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.55);
     position:relative;
   }
-  .card:hover{ transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,.12); }
-  .card-media{
-    background:#f6fff9; display:grid; place-items:center;
-    aspect-ratio: 1 / 1; overflow:hidden;
+  .modal-close{
+    position:absolute; top:10px; right:12px;
+    width:36px; height:36px; border-radius:10px;
+    display:grid; place-items:center;
+    background:#0a1121; color:#cbd5e1; border:1px solid #1f2937; cursor:pointer;
   }
-  .card-media img{ width:100%; height:100%; object-fit:contain; display:block; }
-  .badge{
-    position:absolute; top:10px; left:10px;
-    color:#fff; font-size:12px; padding:6px 10px; border-radius:999px; font-weight:700;
-    letter-spacing:.2px; box-shadow: var(--shadow-sm);
-  }
-  .badge.keycap{ background: var(--keycap); }
-  .badge.switch{ background: var(--switch); }
-  .badge.base{ background: var(--base); }
+  .modal-img-wrap{ position:relative; overflow:hidden; border-radius:14px; border:1px solid #0f2139 }
+  .modal-img{ width:100%; display:block; background:#071122; max-height: 54vh; object-fit: contain }
 
-  .price-tag{
-    position:absolute; top:10px; right:10px;
-    background: rgba(0,0,0,.75); color:#fff; font-size:13px; padding:6px 10px;
-    border-radius:10px; font-weight:700; letter-spacing:.2px;
+  .nav{
+    position:absolute; inset:0; display:flex; justify-content:space-between; align-items:center; pointer-events:none;
   }
-  .card-body{ padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-  .card-title{ font-weight:800; font-size:15px; }
-  .card-cta{
-    border:none; background:#e8f5e9; color:var(--brand);
-    font-weight:800; padding:8px 12px; border-radius:10px; cursor:pointer;
-    transition: background .15s ease, transform .15s ease;
+  .nav button{
+    pointer-events:auto;
+    width:40px; height:40px; border-radius:999px;
+    background: #0b162d99; color:#e2e8f0; border:1px solid #1e293b; cursor:pointer;
+    display:grid; place-items:center; font-size:18px;
   }
-  .card-cta:hover{ background:#d8f0da; transform: translateY(-1px); }
-  .card-cta:focus-visible{ outline:none; box-shadow: var(--ring); }
+  .nav .left{ margin-left:8px }
+  .nav .right{ margin-right:8px }
 
-  /* ===== Order Summary ===== */
-  .order{
-    background: var(--card);
-    border-radius:18px;
-    box-shadow: var(--shadow);
-    padding:18px;
-    margin: 18px auto 30px;
+  .modal-price{ margin:10px 2px 6px; font-weight:800; color:#86efac; font-size:18px }
+  .modal-desc{ color:#cbd5e1; font-size:14px; margin-bottom:8px; min-height: 38px }
+  .modal-extra{ color:#a7f3d0; font-size:13px; display:grid; gap:6px; }
+  .sound-btn{
+    margin-top:8px;
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    color:#052e1d; border:none; border-radius:12px;
+    padding:10px 14px; font-weight:800; cursor:pointer;
   }
-  .order h3{ margin:0 0 12px; font-size:18px; }
-  .order-line{
-    display:flex; gap:16px; align-items:center; justify-content:center; flex-wrap:wrap;
+  .btn-add{
+    margin-top:12px;
+    width:100%;
+    background: linear-gradient(180deg, #34d399, #10b981);
+    color:#052e1d; border:none; border-radius:12px;
+    padding:12px 16px; font-weight:900; letter-spacing:.2px; cursor:pointer;
+    box-shadow: 0 8px 20px rgba(34,197,94,.25);
   }
-  .order-line .mini{
-    width:110px; height:110px; border:1px solid #e6efe8; border-radius:12px;
-    display:grid; place-items:center; background:#f7fff8; overflow:hidden;
-  }
-  .order-line img{ width:100%; height:100%; object-fit:contain; }
-  .order-total{
-    margin-top:12px; text-align:center; font-weight:900; font-size:20px;
-  }
+  .btn-add:hover{ filter: brightness(1.05) }
 
-  /* ===== Delivery & Payment ===== */
-  .dp{
-    background: var(--card);
-    border-radius:18px;
-    box-shadow: var(--shadow);
-    padding:18px;
-  }
-  .dp h4{ margin:0 0 12px; font-size:18px; }
-  .dp-row{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-  @media (max-width:720px){ .dp-row{ grid-template-columns: 1fr; } }
-  .dp .group{
-    border:1px solid #e6efe8; border-radius:14px; padding:12px 14px;
-    background: #f9fffb;
-  }
-  .dp label{ font-weight:700; display:block; margin-bottom:8px; }
-  .dp select{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid #d9e7dc; background:#fff; }
-  .pay-row{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
-  .pay-row .opt{
-    display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #d9e7dc; padding:8px 12px; border-radius:10px;
-  }
+  /* ====== УТИЛИТЫ ====== */
+  .hidden{display:none !important;}
 
-  /* ===== Modal (Gallery & Switch) ===== */
-  .modal{
-    position:fixed; inset:0; background: rgba(0,0,0,.55);
-    display:none; place-items:center; z-index:1000;
+  /* Мобильные улучшения */
+  @media (max-width:540px){
+    .menu{ flex-direction:column }
+    .menu .card-btn{ padding:14px 14px }
+    .slot img{ height:96px }
   }
-  .modal.active{ display:grid; }
-  .dialog{
-    width:min(560px, 92vw); background: var(--card); border-radius:18px; box-shadow: var(--shadow);
-    padding:16px 16px 18px; position:relative;
-  }
-  .close-btn{
-    position:absolute; right:10px; top:10px; border:none; background:#edf7ef; color:var(--ink);
-    width:36px; height:36px; border-radius:999px; cursor:pointer; font-size:18px; font-weight:800;
-  }
-  .close-btn:hover{ filter: brightness(1.03); }
-  .gallery{
-    position:relative; background:#f6fff9; border-radius:14px; overflow:hidden; display:grid; place-items:center;
-    aspect-ratio: 1 / 1;
-  }
-  .gallery img{ width:100%; height:100%; object-fit:contain; user-select:none; }
-  .arrow{
-    position:absolute; top:50%; transform: translateY(-50%);
-    width:42px; height:42px; border-radius:999px; border:none; cursor:pointer;
-    background: rgba(0,0,0,.55); color:#fff; font-size:18px; display:grid; place-items:center;
-  }
-  .arrow.left{ left:10px; }
-  .arrow.right{ right:10px; }
-  .modal-body{ padding:12px 2px 0; }
-  .modal-title{ font-size:18px; font-weight:900; margin:6px 0 4px; }
-  .modal-meta{ color:var(--muted); font-size:14px; margin-bottom:8px; }
-  .modal-actions{ display:flex; gap:10px; align-items:center; justify-content:center; padding-top:6px; }
-  .btn-primary{
-    background: linear-gradient(135deg, var(--brand), var(--brand-2));
-    border:none; color:#fff; font-weight:800; padding:10px 14px; border-radius:12px; cursor:pointer;
-  }
-  .btn-primary:hover{ filter: brightness(1.05); }
-  .btn-ghost{
-    background:#edf7ef; color:var(--brand); border:none; font-weight:800; padding:10px 12px; border-radius:12px; cursor:pointer;
-  }
-  .btn-ghost:hover{ filter: brightness(1.02); }
-
-  /* Helper: visually-hidden for labels */
-  .visually-hidden{ position:absolute!important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
 </style>
 </head>
 <body>
 
-<header class="container">
-  <h1>Конфигуратор кастомной клавиатуры</h1>
-  <p class="subtitle">Выберите комплектующие, просмотрите детали и оформите заказ</p>
-  <div class="menu" role="navigation" aria-label="Основное меню">
-    <button class="pill keycaps" data-block="keycaps-block"><span class="icon">🎨</span> Кейкапы</button>
-    <button class="pill switches" data-block="switches-block"><span class="icon">🎛️</span> Свитчи</button>
-    <button class="pill bases" data-block="bases-block"><span class="icon">⌨️</span> Основы</button>
-    <button class="pill delivery" data-block="delivery-block"><span class="icon">🚚</span> Доставка и оплата</button>
-    <button class="pill cart" id="open-cart"><span class="icon">🛒</span> Корзина</button>
-  </div>
-</header>
+<h1>Конфигуратор кастомной клавиатуры</h1>
+<div class="sub">Выберите комплектующие, прослушайте звук свитчей и оформите заказ</div>
 
-<main class="container">
-
-  <!-- Сетки -->
-  <section id="keycaps-block" class="block"></section>
-  <section id="switches-block" class="block"></section>
-  <section id="bases-block" class="block"></section>
-
-  <!-- Финальный заказ -->
-  <section id="order-summary" class="order">
-    <h3>Ваш заказ</h3>
-    <div class="order-line">
-      <div class="mini"><img id="order-keycap" alt="Кейкап (превью)" loading="lazy" /></div>
-      <div class="mini"><img id="order-switch" alt="Свитч (превью)" loading="lazy" /></div>
-      <div class="mini"><img id="order-base" alt="Основа (превью)" loading="lazy" /></div>
+<!-- ====== МЕНЮ КАТЕГОРИЙ ====== -->
+<div class="menu" role="navigation" aria-label="Категории">
+  <button class="card-btn keycaps" data-block="keycaps-block" aria-controls="keycaps-block" aria-expanded="false">
+    <div class="icon">⌨️</div>
+    <div>
+      <div class="label">Кейкапы</div>
+      <div class="hint">6 вариантов • слайдер фото</div>
     </div>
-    <div class="order-total" id="order-total">Итог: 0 ₽</div>
-  </section>
-
-  <!-- Доставка и оплата -->
-  <section id="delivery-block" class="block dp">
-    <h4>Доставка и оплата</h4>
-    <div class="dp-row">
-      <div class="group">
-        <label for="delivery">Способ доставки</label>
-        <select id="delivery" aria-label="Выберите доставку">
-          <option value="300">СДЭК из СПб — 300 ₽</option>
-          <option value="500">Курьер — 500 ₽</option>
-          <option value="0">Самовывоз — бесплатно</option>
-        </select>
-      </div>
-      <div class="group">
-        <span class="visually-hidden" id="pay-legend">Способ оплаты</span>
-        <div class="pay-row" role="group" aria-labelledby="pay-legend">
-          <label class="opt"><input type="radio" name="payment" value="crypto" checked /> Криптовалюта</label>
-          <label class="opt"><input type="radio" name="payment" value="sbp" /> СБП</label>
-          <label class="opt"><input type="radio" name="payment" value="card" /> Карта</label>
-        </div>
-      </div>
+  </button>
+  <button class="card-btn switches" data-block="switches-block" aria-controls="switches-block" aria-expanded="false">
+    <div class="icon">🎧</div>
+    <div>
+      <div class="label">Свитчи</div>
+      <div class="hint">6 вариантов • звук</div>
     </div>
-  </section>
-
-</main>
-
-<!-- Модалка: галерея (кейкапы/основы) + модалка свитчей -->
-<div id="modal" class="modal" aria-modal="true" role="dialog" aria-labelledby="modal-title">
-  <div class="dialog">
-    <button class="close-btn" id="modal-close" aria-label="Закрыть">×</button>
-
-    <div class="gallery" id="gallery">
-      <button class="arrow left" id="prev-btn" aria-label="Предыдущее изображение">‹</button>
-      <img id="modal-img" alt="Просмотр товара" />
-      <button class="arrow right" id="next-btn" aria-label="Следующее изображение">›</button>
+  </button>
+  <button class="card-btn bases" data-block="bases-block" aria-controls="bases-block" aria-expanded="false">
+    <div class="icon">🧱</div>
+    <div>
+      <div class="label">Основы</div>
+      <div class="hint">6 вариантов • слайдер фото</div>
     </div>
-
-    <div class="modal-body">
-      <div id="modal-title" class="modal-title"></div>
-      <div id="modal-meta" class="modal-meta"></div>
-      <div class="modal-actions">
-        <button id="modal-add" class="btn-primary">Добавить в клавиатуру</button>
-        <button id="modal-sound" class="btn-ghost" style="display:none;">🔊 Прослушать звук</button>
-      </div>
-    </div>
-  </div>
+  </button>
 </div>
 
-<!-- "Корзина" как быстрый просмотр текущего выбора (тот же итог, но во всплывашке) -->
-<div id="cart" class="modal" aria-modal="true" role="dialog" aria-labelledby="cart-title">
-  <div class="dialog">
-    <button class="close-btn" id="cart-close" aria-label="Закрыть">×</button>
-    <h3 id="cart-title" class="modal-title">Корзина</h3>
-    <div class="order-line" style="margin-top:10px;">
-      <div class="mini"><img id="cart-keycap" alt="Кейкап в корзине"/></div>
-      <div class="mini"><img id="cart-switch" alt="Свитч в корзине"/></div>
-      <div class="mini"><img id="cart-base" alt="Основа в корзине"/></div>
+<!-- ====== БЛОКИ-СЕТКИ ====== -->
+<section id="keycaps-block" class="block" aria-label="Кейкапы"></section>
+<section id="switches-block" class="block" aria-label="Свитчи"></section>
+<section id="bases-block"   class="block" aria-label="Основы"></section>
+
+<!-- ====== КОРЗИНА + ДОСТАВКА & ОПЛАТА ====== -->
+<div class="panel-row">
+  <section class="panel" aria-label="Корзина">
+    <h3>Ваша комплектация</h3>
+    <div id="order-items">
+      <div class="slot" id="slot-keycap">
+        <img id="order-keycap" src="" alt="Кейкап"/>
+        <div class="name" id="name-keycap">Кейкап не выбран</div>
+        <div class="price" id="price-keycap"></div>
+      </div>
+      <div class="slot" id="slot-switch">
+        <img id="order-switch" src="" alt="Свитч"/>
+        <div class="name" id="name-switch">Свитч не выбран</div>
+        <div class="price" id="price-switch"></div>
+      </div>
+      <div class="slot" id="slot-base">
+        <img id="order-base" src="" alt="Основа"/>
+        <div class="name" id="name-base">Основа не выбрана</div>
+        <div class="price" id="price-base"></div>
+      </div>
     </div>
-    <div class="order-total" id="cart-total" style="margin-top:14px;">Итог: 0 ₽</div>
+    <div class="total">
+      <button class="clear-btn" id="clear-all" type="button">Очистить выбор</button>
+      <div class="sum" id="order-total">Итог: 0 ₽</div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Доставка и оплата">
+    <h3>Доставка и оплата</h3>
+    <div class="field">
+      <label for="delivery">Способ доставки</label>
+      <select id="delivery" aria-label="Способ доставки">
+        <option value="300">СДЭК (из СПб) — 300 ₽</option>
+        <option value="500">Курьер — 500 ₽</option>
+        <option value="0">Самовывоз — бесплатно</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Способ оплаты</label>
+      <div class="radios" role="radiogroup" aria-label="Способ оплаты">
+        <label><input type="radio" name="payment" value="crypto" checked/> Криптовалюта</label>
+        <label><input type="radio" name="payment" value="sbp"/> СБП</label>
+        <label><input type="radio" name="payment" value="card"/> Банковская карта</label>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== МОДАЛЬНОЕ ОКНО ====== -->
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal-content">
+    <button id="modal-close" class="modal-close" aria-label="Закрыть">✕</button>
+
+    <div class="modal-img-wrap">
+      <img id="modal-img" class="modal-img" src="" alt="Фото товара"/>
+      <div class="nav">
+        <button class="left"  id="nav-left"  aria-label="Предыдущее фото">❮</button>
+        <button class="right" id="nav-right" aria-label="Следующее фото">❯</button>
+      </div>
+    </div>
+
+    <div id="modal-price" class="modal-price"></div>
+    <div id="modal-desc"  class="modal-desc"></div>
+    <div id="modal-extra" class="modal-extra"></div>
+    <button id="modal-add-btn" class="btn-add">Добавить в сборку</button>
   </div>
 </div>
 
 <script>
-  /* =================== DATA (6 штук в каждом блоке) =================== */
-  const data = {
-    keycaps: [
-      {id:1, name:"Кейкап #1", images:["https://picsum.photos/seed/kc1a/600/600","https://picsum.photos/seed/kc1b/600/600","https://picsum.photos/seed/kc1c/600/600"], price:1200, desc:"PBT, профайл Cherry"},
-      {id:2, name:"Кейкап #2", images:["https://picsum.photos/seed/kc2a/600/600","https://picsum.photos/seed/kc2b/600/600","https://picsum.photos/seed/kc2c/600/600"], price:1350, desc:"ABS, профайл OEM"},
-      {id:3, name:"Кейкап #3", images:["https://picsum.photos/seed/kc3a/600/600","https://picsum.photos/seed/kc3b/600/600","https://picsum.photos/seed/kc3c/600/600"], price:1500, desc:"PBT, окраска Dye-sub"},
-      {id:4, name:"Кейкап #4", images:["https://picsum.photos/seed/kc4a/600/600","https://picsum.photos/seed/kc4b/600/600","https://picsum.photos/seed/kc4c/600/600"], price:1100, desc:"PBT, текстура матовая"},
-      {id:5, name:"Кейкап #5", images:["https://picsum.photos/seed/kc5a/600/600","https://picsum.photos/seed/kc5b/600/600","https://picsum.photos/seed/kc5c/600/600"], price:1450, desc:"ABS, двуслойная легенда"},
-      {id:6, name:"Кейкап #6", images:["https://picsum.photos/seed/kc6a/600/600","https://picsum.photos/seed/kc6b/600/600","https://picsum.photos/seed/kc6c/600/600"], price:1600, desc:"PBT, профайл XDA"}
-    ],
-    switches: [
-      {id:1, name:"Свитч #1", img:"https://picsum.photos/seed/sw1/600/600", price:500, sound:"https://actions.google.com/sounds/v1/impacts/mechanical_plastic_impact.ogg", desc:"Линейный, 45г"},
-      {id:2, name:"Свитч #2", img:"https://picsum.photos/seed/sw2/600/600", price:540, sound:"https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg", desc:"Тактильный, 50г"},
-      {id:3, name:"Свитч #3", img:"https://picsum.photos/seed/sw3/600/600", price:520, sound:"https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg", desc:"Кликающий, 60г"},
-      {id:4, name:"Свитч #4", img:"https://picsum.photos/seed/sw4/600/600", price:530, sound:"https://actions.google.com/sounds/v1/tools/squeaky_toy.ogg", desc:"Линейный, 40г"},
-      {id:5, name:"Свитч #5", img:"https://picsum.photos/seed/sw5/600/600", price:590, sound:"https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg", desc:"Тактильный, 55г"},
-      {id:6, name:"Свитч #6", img:"https://picsum.photos/seed/sw6/600/600", price:560, sound:"https://actions.google.com/sounds/v1/cartoon/metal_clang_and_wobble.ogg", desc:"Кликающий, 58г"}
-    ],
-    bases: [
-      {id:1, name:"Основа #1", images:["https://picsum.photos/seed/bs1a/600/600","https://picsum.photos/seed/bs1b/600/600","https://picsum.photos/seed/bs1c/600/600"], price:7000, material:"Алюминий", os:"Windows, macOS", connection:"Проводное", battery:"—", desc:"65%, hotswap"},
-      {id:2, name:"Основа #2", images:["https://picsum.photos/seed/bs2a/600/600","https://picsum.photos/seed/bs2b/600/600","https://picsum.photos/seed/bs2c/600/600"], price:7500, material:"Пластик", os:"Windows", connection:"Беспроводное", battery:"3200mAh", desc:"TKL, 2.4Гц/BT"},
-      {id:3, name:"Основа #3", images:["https://picsum.photos/seed/bs3a/600/600","https://picsum.photos/seed/bs3b/600/600","https://picsum.photos/seed/bs3c/600/600"], price:7200, material:"Дерево", os:"macOS", connection:"Проводное", battery:"—", desc:"Alice layout"},
-      {id:4, name:"Основа #4", images:["https://picsum.photos/seed/bs4a/600/600","https://picsum.photos/seed/bs4b/600/600","https://picsum.photos/seed/bs4c/600/600"], price:8000, material:"Алюминий", os:"Windows, macOS", connection:"Беспроводное", battery:"4000mAh", desc:"75%, gasket"},
-      {id:5, name:"Основа #5", images:["https://picsum.photos/seed/bs5a/600/600","https://picsum.photos/seed/bs5b/600/600","https://picsum.photos/seed/bs5c/600/600"], price:6800, material:"Пластик", os:"Windows", connection:"Проводное", battery:"—", desc:"60%, компакт"},
-      {id:6, name:"Основа #6", images:["https://picsum.photos/seed/bs6a/600/600","https://picsum.photos/seed/bs6b/600/600","https://picsum.photos/seed/bs6c/600/600"], price:6900, material:"Дерево", os:"macOS", connection:"Беспроводное", battery:"3500mAh", desc:"75%, эргономичная"}
-    ]
-  };
+/* ===================== ДАННЫЕ (6 на блок) ===================== */
+const data = {
+  keycaps: [
+    {id:1, images:["https://i.imgur.com/1.png","https://i.imgur.com/2.png","https://i.imgur.com/3.png"], price:1200, desc:"Кейкап #1 — двойной литьё PBT"},
+    {id:2, images:["https://i.imgur.com/4.png","https://i.imgur.com/5.png","https://i.imgur.com/6.png"], price:1300, desc:"Кейкап #2 — профиль Cherry"},
+    {id:3, images:["https://i.imgur.com/7.png","https://i.imgur.com/8.png","https://i.imgur.com/9.png"], price:1400, desc:"Кейкап #3 — матовая поверхность"},
+    {id:4, images:["https://i.imgur.com/10.png","https://i.imgur.com/11.png","https://i.imgur.com/12.png"], price:1250, desc:"Кейкап #4 — легенды MG"},
+    {id:5, images:["https://i.imgur.com/13.png","https://i.imgur.com/14.png","https://i.imgur.com/15.png"], price:1350, desc:"Кейкап #5 — подсветка RGB shine-through"},
+    {id:6, images:["https://i.imgur.com/16.png","https://i.imgur.com/17.png","https://i.imgur.com/18.png"], price:1450, desc:"Кейкап #6 — ограниченная серия"}
+  ],
+  switches: [
+    {id:1, img:"https://i.imgur.com/a1.png", price:500, sound:"https://actions.google.com/sounds/v1/door/door_knock_1.ogg", desc:"Свитч #1 — линейный 45g"},
+    {id:2, img:"https://i.imgur.com/a2.png", price:600, sound:"https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg", desc:"Свитч #2 — тактильный 55g"},
+    {id:3, img:"https://i.imgur.com/a3.png", price:550, sound:"https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg", desc:"Свитч #3 — клики 60g"},
+    {id:4, img:"https://i.imgur.com/a4.png", price:530, sound:"https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg", desc:"Свитч #4 — линейный 50g"},
+    {id:5, img:"https://i.imgur.com/a5.png", price:580, sound:"https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg", desc:"Свитч #5 — тактильный 62g"},
+    {id:6, img:"https://i.imgur.com/a6.png", price:520, sound:"https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg", desc:"Свитч #6 — тихий линейный"}
+  ],
+  bases: [
+    {id:1, images:["https://i.imgur.com/b1.png","https://i.imgur.com/b2.png","https://i.imgur.com/b3.png"], price:7000, material:"Алюминий", os:"Windows, Mac", connection:"Проводное",   battery:"—",       desc:"Основа #1 — TKL корпус"},
+    {id:2, images:["https://i.imgur.com/b4.png","https://i.imgur.com/b5.png","https://i.imgur.com/b6.png"], price:7500, material:"Пластик",  os:"Windows",     connection:"Беспроводное", battery:"3000mAh", desc:"Основа #2 — полноразмер"},
+    {id:3, images:["https://i.imgur.com/b7.png","https://i.imgur.com/b8.png","https://i.imgur.com/b9.png"], price:7200, material:"Дерево",   os:"Mac",         connection:"Проводное",   battery:"—",       desc:"Основа #3 — 65% компакт"},
+    {id:4, images:["https://i.imgur.com/b10.png","https://i.imgur.com/b11.png","https://i.imgur.com/b12.png"], price:8000, material:"Алюминий", os:"Windows, Mac", connection:"Беспроводное", battery:"4000mAh", desc:"Основа #4 — 75% горячая замена"},
+    {id:5, images:["https://i.imgur.com/b13.png","https://i.imgur.com/b14.png","https://i.imgur.com/b15.png"], price:6800, material:"Пластик",  os:"Windows",     connection:"Проводное",   battery:"—",       desc:"Основа #5 — бюджетный кейс"},
+    {id:6, images:["https://i.imgur.com/b16.png","https://i.imgur.com/b17.png","https://i.imgur.com/b18.png"], price:6900, material:"Дерево",   os:"Mac",         connection:"Беспроводное", battery:"3500mAh", desc:"Основа #6 — винтаж стиль"}
+  ]
+};
 
-  /* =================== STATE =================== */
-  const blocks = {
-    keycaps: document.getElementById("keycaps-block"),
-    switches: document.getElementById("switches-block"),
-    bases: document.getElementById("bases-block"),
-    delivery: document.getElementById("delivery-block")
-  };
+/* ===================== DOM ===================== */
+const blocks = {
+  keycaps: document.getElementById('keycaps-block'),
+  switches: document.getElementById('switches-block'),
+  bases: document.getElementById('bases-block')
+};
 
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modal-img");
-  const modalTitle = document.getElementById("modal-title");
-  const modalMeta = document.getElementById("modal-meta");
-  const modalAdd = document.getElementById("modal-add");
-  const modalSound = document.getElementById("modal-sound");
-  const btnPrev = document.getElementById("prev-btn");
-  const btnNext = document.getElementById("next-btn");
+const modal      = document.getElementById('modal');
+const modalImg   = document.getElementById('modal-img');
+const modalPrice = document.getElementById('modal-price');
+const modalDesc  = document.getElementById('modal-desc');
+const modalExtra = document.getElementById('modal-extra');
+const modalAdd   = document.getElementById('modal-add-btn');
+const modalClose = document.getElementById('modal-close');
+const navLeft    = document.getElementById('nav-left');
+const navRight   = document.getElementById('nav-right');
 
-  const cartModal = document.getElementById("cart");
-  const orderKeycapImg = document.getElementById("order-keycap");
-  const orderSwitchImg = document.getElementById("order-switch");
-  const orderBaseImg = document.getElementById("order-base");
-  const orderTotal = document.getElementById("order-total");
+const orderImgs = {
+  keycap: document.getElementById('order-keycap'),
+  switch: document.getElementById('order-switch'),
+  base:   document.getElementById('order-base')
+};
+const orderNames  = {
+  keycap: document.getElementById('name-keycap'),
+  switch: document.getElementById('name-switch'),
+  base:   document.getElementById('name-base')
+};
+const orderPrices = {
+  keycap: document.getElementById('price-keycap'),
+  switch: document.getElementById('price-switch'),
+  base:   document.getElementById('price-base')
+};
+const orderTotalEl = document.getElementById('order-total');
 
-  const cartKeycap = document.getElementById("cart-keycap");
-  const cartSwitch = document.getElementById("cart-switch");
-  const cartBase = document.getElementById("cart-base");
-  const cartTotal = document.getElementById("cart-total");
+const deliverySelect = document.getElementById('delivery');
+const paymentRadios  = document.querySelectorAll('input[name="payment"]');
+const clearAllBtn    = document.getElementById('clear-all');
 
-  let order = { keycap:null, switch:null, base:null, deliveryCost:300, paymentMethod:"crypto" };
+/* ===================== STATE ===================== */
+let order = {
+  keycap: null,
+  switch: null,
+  base:   null,
+  deliveryCost: Number(deliverySelect.value || 300),
+  paymentMethod: 'crypto'
+};
 
-  // Modal runtime
-  let currentCategory = null; // 'keycaps' | 'switches' | 'bases'
-  let currentItem = null;
-  let images = [];
-  let index = 0;
-  let audio = null;
+let currentCategory = '';
+let currentItem = null;
+let currentImages = [];
+let currentIndex = 0;
 
-  /* =================== RENDERERS =================== */
-  function renderGrid(category){
-    const container = blocks[category];
-    container.className = "block active"; // ensure visible when first nav click
-    container.innerHTML = `
-      <div class="grid" role="list" aria-label="${category}">
-        ${data[category].slice(0,6).map(item=>{
-          const img = item.images ? item.images[0] : item.img;
-          const badgeClass = category==='keycaps'?'keycap':category==='switches'?'switch':'base';
-          return `
-            <article class="card" role="listitem" tabindex="0" aria-label="${item.name}">
-              <div class="card-media">
-                <span class="badge ${badgeClass}">${category==='keycaps'?'Кейкап':category==='switches'?'Свитч':'Основа'}</span>
-                <span class="price-tag">${item.price} ₽</span>
-                <img src="${img}" alt="${item.name}" loading="lazy">
-              </div>
-              <div class="card-body">
-                <div class="card-title">${item.name}</div>
-                <button class="card-cta" data-category="${category}" data-id="${item.id}">Подробнее</button>
-              </div>
-            </article>
-          `;
-        }).join('')}
-      </div>
+/* ===================== РЕНДЕР СЕТОК ===================== */
+function renderGrid(category){
+  const container = blocks[category];
+  container.innerHTML = '';
+  container.classList.add('grid');
+
+  data[category].slice(0,6).forEach(item => {
+    const tile = document.createElement('div');
+    tile.className = 'item';
+    const imgSrc = item.images ? item.images[0] : item.img;
+    tile.innerHTML = `
+      <span class="price-tag">${item.price.toLocaleString('ru-RU')} ₽</span>
+      <img src="${imgSrc}" alt="${item.desc}">
+      <div class="caption">${item.desc}</div>
     `;
+    tile.addEventListener('click', () => openModal(item, category));
+    container.appendChild(tile);
+  });
+}
 
-    // bind buttons
-    container.querySelectorAll(".card-cta").forEach(btn=>{
-      btn.addEventListener("click", (e)=>{
-        e.stopPropagation();
-        const cat = btn.getAttribute("data-category");
-        const id = +btn.getAttribute("data-id");
-        const item = data[cat].find(x=>x.id===id);
-        openModal(cat, item);
-      });
-    });
+/* ===================== МОДАЛКА ===================== */
+function openModal(item, category){
+  currentCategory = category;
+  currentItem = item;
+  currentImages = item.images ? item.images.slice(0,3) : (item.img ? [item.img] : []);
+  currentIndex = 0;
 
-    // open by Enter on card
-    container.querySelectorAll(".card").forEach(card=>{
-      card.addEventListener("keydown",(ev)=>{
-        if(ev.key==="Enter"){ card.querySelector(".card-cta").click(); }
-      });
+  modalImg.src = currentImages[0] || '';
+  modalPrice.textContent = `Цена: ${item.price.toLocaleString('ru-RU')} ₽`;
+  modalDesc.textContent  = item.desc || '';
+  modalExtra.innerHTML   = '';
+
+  // Доп. инфо + кнопка звука
+  if(category === 'bases'){
+    modalExtra.innerHTML = `
+      <div><b>Материал:</b> ${item.material}</div>
+      <div><b>ОС:</b> ${item.os}</div>
+      <div><b>Подключение:</b> ${item.connection}</div>
+      <div><b>Аккумулятор:</b> ${item.battery}</div>
+    `;
+  }
+  if(category === 'switches' && item.sound){
+    const btn = document.createElement('button');
+    btn.className = 'sound-btn';
+    btn.type = 'button';
+    btn.textContent = '🔊 Проиграть звук';
+    btn.addEventListener('click', () => {
+      const audio = new Audio(item.sound);
+      audio.play();
     });
+    modalExtra.appendChild(btn);
   }
 
-  function ensureRendered(cat){
-    const el = blocks[cat];
-    if(!el.dataset.rendered){
+  // Управление стрелками
+  updateArrowsVisibility();
+  modal.style.display = 'flex';
+
+  // Добавление в заказ
+  modalAdd.onclick = () => {
+    if(currentCategory === 'keycaps') order.keycap = currentItem;
+    if(currentCategory === 'switches') order.switch = currentItem;
+    if(currentCategory === 'bases')   order.base   = currentItem;
+    updateOrderView();
+    closeModal();
+  };
+}
+
+function updateArrowsVisibility(){
+  const multi = currentImages.length > 1;
+  navLeft.style.visibility  = multi ? 'visible' : 'hidden';
+  navRight.style.visibility = multi ? 'visible' : 'hidden';
+}
+
+function closeModal(){ modal.style.display = 'none'; }
+
+navLeft.addEventListener('click', () => {
+  if(currentImages.length > 1){
+    currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+    modalImg.src = currentImages[currentIndex];
+  }
+});
+navRight.addEventListener('click', () => {
+  if(currentImages.length > 1){
+    currentIndex = (currentIndex + 1) % currentImages.length;
+    modalImg.src = currentImages[currentIndex];
+  }
+});
+modalClose.addEventListener('click', closeModal);
+window.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+window.addEventListener('keydown', (e) => {
+  if(modal.style.display === 'flex'){
+    if(e.key === 'Escape') closeModal();
+    if(e.key === 'ArrowLeft')  navLeft.click();
+    if(e.key === 'ArrowRight') navRight.click();
+  }
+});
+
+/* ===================== ЗАКАЗ (КОРЗИНА) ===================== */
+function updateOrderView(){
+  // Картинки
+  orderImgs.keycap.src = order.keycap ? (order.keycap.images ? order.keycap.images[0] : order.keycap.img) : '';
+  orderImgs.switch.src = order.switch ? order.switch.img : '';
+  orderImgs.base.src   = order.base   ? (order.base.images ? order.base.images[0] : order.base.img) : '';
+
+  // Названия
+  orderNames.keycap.textContent = order.keycap ? order.keycap.desc : 'Кейкап не выбран';
+  orderNames.switch.textContent = order.switch ? order.switch.desc : 'Свитч не выбран';
+  orderNames.base.textContent   = order.base   ? order.base.desc   : 'Основа не выбрана';
+
+  // Цены под слотом
+  orderPrices.keycap.textContent = order.keycap ? `${order.keycap.price.toLocaleString('ru-RU')} ₽` : '';
+  orderPrices.switch.textContent = order.switch ? `${order.switch.price.toLocaleString('ru-RU')} ₽` : '';
+  orderPrices.base.textContent   = order.base   ? `${order.base.price.toLocaleString('ru-RU')} ₽`   : '';
+
+  // Итог
+  const sum =
+    (order.keycap?.price || 0) +
+    (order.switch?.price || 0) +
+    (order.base?.price   || 0) +
+    (order.deliveryCost  || 0);
+  orderTotalEl.textContent = `Итог: ${sum.toLocaleString('ru-RU')} ₽`;
+}
+
+clearAllBtn.addEventListener('click', () => {
+  order.keycap = null;
+  order.switch = null;
+  order.base   = null;
+  updateOrderView();
+});
+
+/* ===================== МЕНЮ КАТЕГОРИЙ ===================== */
+const menuButtons = document.querySelectorAll('.menu .card-btn');
+menuButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Переключение видимости блоков
+    const id = btn.dataset.block; // e.g. keycaps-block
+    const cat = id.split('-')[0];
+
+    Object.values(blocks).forEach(b => b.style.display = 'none');
+    const section = document.getElementById(id);
+    if(section && section.children.length === 0){
       renderGrid(cat);
-      el.dataset.rendered = "1";
     }
-  }
+    if(section){ section.style.display = 'block'; }
 
-  function showBlock(cat){
-    Object.values(blocks).forEach(b=>b.classList.remove("active"));
-    if(cat==="keycaps"||cat==="switches"||cat==="bases"){ ensureRendered(cat); }
-    blocks[cat].classList.add("active");
-    // scroll to section for nicer UX
-    blocks[cat].scrollIntoView({behavior:"smooth", block:"start"});
-  }
+    // ARIA
+    menuButtons.forEach(b => b.setAttribute('aria-expanded','false'));
+    btn.setAttribute('aria-expanded','true');
 
-  /* =================== MODAL (Gallery & Switch) =================== */
-  function openModal(cat, item){
-    currentCategory = cat;
-    currentItem = item;
-    modalTitle.textContent = item.name;
-    modalMeta.textContent = item.desc ? `${item.desc} • ${item.price} ₽` : `${item.price} ₽`;
-    modalSound.style.display = "none";
-    btnPrev.style.display = "none";
-    btnNext.style.display = "none";
-    audio = null;
-
-    if(cat === "switches"){
-      images = [item.img];
-      index = 0;
-      modalImg.src = images[0];
-      modalSound.style.display = "inline-block";
-      modalSound.onclick = ()=> {
-        try{
-          if(audio){ audio.pause(); audio.currentTime = 0; }
-        }catch(e){}
-        audio = new Audio(item.sound);
-        audio.play();
-      };
-    } else {
-      images = item.images.slice(0,3);
-      index = 0;
-      modalImg.src = images[0];
-      btnPrev.style.display = "grid";
-      btnNext.style.display = "grid";
-    }
-
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden"; // lock scroll
-
-    // Keyboard navigation
-    document.addEventListener("keydown", keyHandler);
-    modalAdd.onclick = ()=>{
-      addToOrder(cat, item);
-      closeModal();
-    };
-  }
-
-  function closeModal(){
-    modal.classList.remove("active");
-    document.body.style.overflow = "";
-    try{ if(audio){ audio.pause(); } }catch(e){}
-    document.removeEventListener("keydown", keyHandler);
-  }
-
-  function keyHandler(e){
-    if(e.key==="Escape"){ closeModal(); }
-    if(currentCategory!=="switches"){
-      if(e.key==="ArrowRight"){ nextImage(); }
-      if(e.key==="ArrowLeft"){ prevImage(); }
-    }
-  }
-
-  function nextImage(){
-    index = (index + 1) % images.length;
-    modalImg.src = images[index];
-  }
-  function prevImage(){
-    index = (index - 1 + images.length) % images.length;
-    modalImg.src = images[index];
-  }
-
-  document.getElementById("modal-close").addEventListener("click", closeModal);
-  btnNext.addEventListener("click", nextImage);
-  btnPrev.addEventListener("click", prevImage);
-  modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModal(); });
-
-  /* =================== ORDER / CART =================== */
-  function addToOrder(cat, item){
-    if(cat==="keycaps") order.keycap = item;
-    if(cat==="switches") order.switch = item;
-    if(cat==="bases") order.base = item;
-    updateOrderSummary();
-  }
-
-  function updateOrderSummary(){
-    orderKeycapImg.src = order.keycap ? order.keycap.images[0] : "";
-    orderSwitchImg.src = order.switch ? order.switch.img : "";
-    orderBaseImg.src = order.base ? order.base.images[0] : "";
-
-    const sum = (order.keycap?.price || 0) + (order.switch?.price || 0) + (order.base?.price || 0) + (order.deliveryCost || 0);
-    orderTotal.textContent = `Итог: ${sum} ₽`;
-
-    // обновим всплывающую корзину
-    cartKeycap.src = orderKeycapImg.src;
-    cartSwitch.src = orderSwitchImg.src;
-    cartBase.src = orderBaseImg.src;
-    document.getElementById("cart-total").textContent = `Итог: ${sum} ₽`;
-  }
-
-  // Delivery & payment
-  document.getElementById("delivery").addEventListener("change", (e)=>{
-    order.deliveryCost = +e.target.value;
-    updateOrderSummary();
+    // Скролл к началу блока
+    section?.scrollIntoView({behavior:'smooth', block:'start'});
   });
-  document.querySelectorAll('input[name="payment"]').forEach(r => {
-    r.addEventListener("change", (e)=>{ order.paymentMethod = e.target.value; });
-  });
+});
 
-  // Cart modal
-  document.getElementById("open-cart").addEventListener("click", ()=>{
-    updateOrderSummary();
-    cartModal.classList.add("active");
-    document.body.style.overflow = "hidden";
-  });
-  document.getElementById("cart-close").addEventListener("click", ()=>{
-    cartModal.classList.remove("active");
-    document.body.style.overflow = "";
-  });
-  cartModal.addEventListener("click", (e)=>{ if(e.target===cartModal){ cartModal.classList.remove("active"); document.body.style.overflow=""; } });
+/* ===================== ДОСТАВКА И ОПЛАТА ===================== */
+deliverySelect.addEventListener('change', (e) => {
+  order.deliveryCost = Number(e.target.value || 0);
+  updateOrderView();
+});
+paymentRadios.forEach(r => r.addEventListener('change', (e) => {
+  if(e.target.checked) order.paymentMethod = e.target.value;
+}));
 
-  // Top menu buttons
-  document.querySelectorAll(".menu .pill[data-block]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const id = btn.getAttribute("data-block"); // e.g. keycaps-block
-      const cat = id.replace("-block","");       // keycaps
-      showBlock(cat);
-    });
-  });
-
-  // Initial UI state
-  showBlock("keycaps"); // открываем первую сетку по умолчанию
-  updateOrderSummary();
+/* ===================== ИНИЦИАЛИЗАЦИЯ ===================== */
+updateOrderView();
+// По умолчанию показывать первый блок при первом заходе (опционально):
+// renderGrid('keycaps'); document.getElementById('keycaps-block').style.display='block';
 </script>
 </body>
 </html>
